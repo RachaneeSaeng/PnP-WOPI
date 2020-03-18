@@ -26,6 +26,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -244,6 +245,7 @@
     </Content>
     <None Include="Properties\PublishProfiles\officewopi - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\officewopi - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\wopi-test-app - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\filedrop-min.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
