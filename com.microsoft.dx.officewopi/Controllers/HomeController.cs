@@ -2,11 +2,9 @@
 using com.microsoft.dx.officewopi.Models.Wopi;
 using com.microsoft.dx.officewopi.Security;
 using com.microsoft.dx.officewopi.Utils;
-using Microsoft.Owin.Security.OAuth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -161,7 +159,8 @@ namespace com.microsoft.dx.officewopi.Controllers
         /// </summary>
         private string getUserContainer()
         {
-            return User.Identity.Name.Replace("@", "-").Replace(".", "-");
+            //return User.Identity.Name.Replace("@", "-").Replace(".", "-");
+            return "mwp-test-wopi";
         }
     }
 }
