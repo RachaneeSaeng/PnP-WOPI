@@ -120,7 +120,7 @@ namespace com.microsoft.dx.officewopi.Utils
                 if (urlsrc.Contains(p))
                 {
                     // Replace the placeholder value accordingly
-                    var ph = WopiUrlPlaceholders.GetPlaceholderValue(p);
+                    var ph = WopiUrlPlaceholders.GetPlaceholderValue(p, file, authority);
                     if (!String.IsNullOrEmpty(ph))
                     {
                         urlsrc = urlsrc.Replace(p, ph + "&");
@@ -132,7 +132,7 @@ namespace com.microsoft.dx.officewopi.Utils
             }
 
             // Add the WOPISrc to the end of the request
-            urlsrc += ((phCnt > 0) ? "" : "?") + String.Format("WOPISrc=https://{0}/wopi/files/{1}", authority, file.id.ToString());
+            //urlsrc += ((phCnt > 0) ? "" : "?"); //+ String.Format("WOPISrc=https://{0}/wopi/files/{1}", authority, file.id.ToString());
             return urlsrc;
         }
 
@@ -299,28 +299,36 @@ namespace com.microsoft.dx.officewopi.Utils
     /// </summary>
     public class WopiUrlPlaceholders
     {
-        public static List<string> Placeholders = new List<string>() { BUSINESS_USER,
-            DC_LLCC, DISABLE_ASYNC, DISABLE_CHAT, DISABLE_BROADCAST,
-            EMBDDED, FULLSCREEN, PERFSTATS, RECORDING, THEME_ID, UI_LLCC, VALIDATOR_TEST_CATEGORY
+        public static List<string> Placeholders = new List<string>() {
+            BUSINESS_USER, DC_LLCC, DISABLE_CHAT, PERFSTATS,UI_LLCC,
+            HOST_SESSION_ID, SESSION_CONTEXT, WOPI_SOURCE, ACTIVITY_NAVIGATION_ID,
+            DISABLE_ASYNC, DISABLE_BROADCAST, EMBDDED, FULLSCREEN,
+            RECORDING, THEME_ID, VALIDATOR_TEST_CATEGORY
         };
-        public const string BUSINESS_USER = "<IsLicensedUser=BUSINESS_USER&>";
+
+        public const string UI_LLCC = "<ui=UI_LLCC&>";
         public const string DC_LLCC = "<rs=DC_LLCC&>";
-        public const string DISABLE_ASYNC = "<na=DISABLE_ASYNC&>";
         public const string DISABLE_CHAT = "<dchat=DISABLE_CHAT&>";
+        public const string HOST_SESSION_ID = "<hid=HOST_SESSION_ID&>";
+        public const string SESSION_CONTEXT = "<sc=SESSION_CONTEXT&>";
+        public const string WOPI_SOURCE = "<wopisrc=WOPI_SOURCE&>";
+        public const string PERFSTATS = "<showpagestats=PERFSTATS&>";
+        public const string BUSINESS_USER = "<IsLicensedUser=BUSINESS_USER&>";
+        public const string ACTIVITY_NAVIGATION_ID = "<actnavid=ACTIVITY_NAVIGATION_ID&>";
+
+        public const string DISABLE_ASYNC = "<na=DISABLE_ASYNC&>";
         public const string DISABLE_BROADCAST = "<vp=DISABLE_BROADCAST&>";
         public const string EMBDDED = "<e=EMBEDDED&>";
         public const string FULLSCREEN = "<fs=FULLSCREEN&>";
-        public const string PERFSTATS = "<showpagestats=PERFSTATS&>";
         public const string RECORDING = "<rec=RECORDING&>";
         public const string THEME_ID = "<thm=THEME_ID&>";
-        public const string UI_LLCC = "<ui=UI_LLCC&>";
         public const string VALIDATOR_TEST_CATEGORY = "<testcategory=VALIDATOR_TEST_CATEGORY>";
 
         /// <summary>
         /// Sets a specific WOPI URL placeholder with the correct value
         /// Most of these are hard-coded in this WOPI implementation
         /// </summary>
-        public static string GetPlaceholderValue(string placeholder)
+        public static string GetPlaceholderValue(string placeholder, FileModel file, string authority)
         {
             var ph = placeholder.Substring(1, placeholder.IndexOf("="));
             string result = "";
@@ -331,25 +339,39 @@ namespace com.microsoft.dx.officewopi.Utils
                     break;
                 case DC_LLCC:
                 case UI_LLCC:
-                    result = ph + "1033";
+                    result = ph + "1033"; // en-US
                     break;
                 case DISABLE_ASYNC:
                 case DISABLE_BROADCAST:
                 case EMBDDED:
                 case FULLSCREEN:
                 case RECORDING:
-                case THEME_ID:
                     // These are all broadcast related actions
                     result = ph + "true";
                     break;
+                case THEME_ID:
+                    result = ph + "1";
+                    break;
                 case DISABLE_CHAT:
-                    result = ph + "false";
+                    result = ph + "0";
                     break;
                 case PERFSTATS:
-                    result = ""; // No documentation
+                    result = ph + "0";
                     break;
                 case VALIDATOR_TEST_CATEGORY:
                     result = ph + "OfficeOnline"; //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.
+                    break;
+                case WOPI_SOURCE:
+                    result = String.Format("{0}https://{1}/wopi/files/{2}", ph, authority, file.id.ToString()); //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.
+                    break;
+                case SESSION_CONTEXT:
+                    result = ""; //no value to specify
+                    break;
+                case HOST_SESSION_ID:
+                    result = ""; //no value to specify
+                    break;
+                case ACTIVITY_NAVIGATION_ID:
+                    result = ""; //no value to specify
                     break;
                 default:
                     result = "";
