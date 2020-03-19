@@ -7,11 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Newtonsoft.Json.Linq;
 
 namespace com.microsoft.dx.officewopi.Utils
 {
@@ -34,7 +31,7 @@ namespace com.microsoft.dx.officewopi.Utils
                 // Lookup the file in the database
                 var itemId = new Guid(request.Id);
                 var file = DocumentDBRepository<DetailedFileModel>.GetItem("Files", i => i.id == itemId);
-                
+
                 // Check for null file
                 if (file == null)
                     response = returnStatus(HttpStatusCode.NotFound, "File Unknown/User Unauthorized");
@@ -51,13 +48,16 @@ namespace com.microsoft.dx.officewopi.Utils
                         file.CloseUrl = String.Format("https://{0}", context.Request.Url.Authority);
                         var view = actions.FirstOrDefault(i => i.ext == fileExt && i.name == "view");
                         if (view != null)
-                            file.HostViewUrl = WopiUtil.GetActionUrl(view, file, context.Request.Url.Authority);
+                            file.HostViewUrl = $"https://wopi-test.go.myworkpapers.co.uk/Home/Detail/{file.id}?action=view";
+                        //file.HostViewUrl = WopiUtil.GetActionUrl(view, file, context.Request.Url.Authority);
                         var edit = actions.FirstOrDefault(i => i.ext == fileExt && i.name == "edit");
                         if (edit != null)
-                            file.HostEditUrl = WopiUtil.GetActionUrl(edit, file, context.Request.Url.Authority);
+                            file.HostEditUrl = $"https://wopi-test.go.myworkpapers.co.uk/Home/Detail/{file.id}?action=edit";
+                        //file.HostEditUrl = WopiUtil.GetActionUrl(edit, file, context.Request.Url.Authority);
 
                         // Get the user from the token (token is already validated)
-                        file.UserId = WopiSecurity.GetUserFromToken(request.AccessToken);
+                        file.UserId = "rachanee.saeng@gmail.com";
+                        file.UserFriendlyName = "Apple Saeng";
 
                         // Call the appropriate handler for the WOPI request we received
                         switch (request.RequestType)
@@ -163,7 +163,7 @@ namespace com.microsoft.dx.officewopi.Utils
 
             // Ensure the file isn't already locked or expired
             if (String.IsNullOrEmpty(file.LockValue) ||
-                (file.LockExpires != null && 
+                (file.LockExpires != null &&
                 file.LockExpires < DateTime.Now))
             {
                 // Update the file with a LockValue and LockExpiration
@@ -397,7 +397,7 @@ namespace com.microsoft.dx.officewopi.Utils
                 {
                     // File isn't locked...pass empty Lock in mismatch response
                     return context.returnLockMismatch(String.Empty, "File isn't locked");
-                }                
+                }
             }
             else if (file.LockExpires != null && file.LockExpires < DateTime.Now)
             {
@@ -580,7 +580,7 @@ namespace com.microsoft.dx.officewopi.Utils
             var stream = context.Request.InputStream;
             var bytes = new byte[stream.Length];
             await stream.ReadAsync(bytes, 0, (int)stream.Length);
-            file.UserInfo = System.Text.Encoding.UTF8.GetString(bytes);
+            //file.UserInfo = System.Text.Encoding.UTF8.GetString(bytes);
 
             // Update the file in DocumentDB
             await DocumentDBRepository<FileModel>.UpdateItemAsync("Files", file.id.ToString(), (FileModel)file);
@@ -670,24 +670,24 @@ namespace com.microsoft.dx.officewopi.Utils
                                 requestData.RequestType = WopiRequestType.PutUserInfo;
                                 break;
 
-                            /*
-                            // The following WOPI_Override values were referenced in the product group sample, but not in the documentation
-                            case "COBALT":
-                                requestData.RequestType = WopiRequestType.ExecuteCobaltRequest;
-                                break;
-                            case "DELETE":
-                                requestData.RequestType = WopiRequestType.DeleteFile;
-                                break;
-                            case "READ_SECURE_STORE":
-                                requestData.RequestType = WopiRequestType.ReadSecureStore;
-                                break;
-                            case "GET_RESTRICTED_LINK":
-                                requestData.RequestType = WopiRequestType.GetRestrictedLink;
-                                break;
-                            case "REVOKE_RESTRICTED_LINK":
-                                requestData.RequestType = WopiRequestType.RevokeRestrictedLink;
-                                break;
-                            */
+                                /*
+                                // The following WOPI_Override values were referenced in the product group sample, but not in the documentation
+                                case "COBALT":
+                                    requestData.RequestType = WopiRequestType.ExecuteCobaltRequest;
+                                    break;
+                                case "DELETE":
+                                    requestData.RequestType = WopiRequestType.DeleteFile;
+                                    break;
+                                case "READ_SECURE_STORE":
+                                    requestData.RequestType = WopiRequestType.ReadSecureStore;
+                                    break;
+                                case "GET_RESTRICTED_LINK":
+                                    requestData.RequestType = WopiRequestType.GetRestrictedLink;
+                                    break;
+                                case "REVOKE_RESTRICTED_LINK":
+                                    requestData.RequestType = WopiRequestType.RevokeRestrictedLink;
+                                    break;
+                                */
                         }
                     }
                 }

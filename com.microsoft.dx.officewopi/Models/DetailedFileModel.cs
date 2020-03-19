@@ -1,10 +1,6 @@
 ﻿using com.microsoft.dx.officewopi.Models.Wopi;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace com.microsoft.dx.officewopi.Models
 {
@@ -95,8 +91,8 @@ namespace com.microsoft.dx.officewopi.Models
             get { return true; }
         }
 
-        [JsonProperty(PropertyName = "LicensesCheckForEditIsEnabled")]
-        public bool LicensesCheckForEditIsEnabled
+        [JsonProperty(PropertyName = "LicenseCheckForEditIsEnabled")]
+        public bool LicenseCheckForEditIsEnabled
         {
             get { return true; }
         }
@@ -154,5 +150,8 @@ namespace com.microsoft.dx.officewopi.Models
 
         [JsonProperty(PropertyName = "Actions")]
         public List<WopiAction> Actions { get; set; }
+
+        [JsonProperty(PropertyName = "UserFriendlyName")]
+        public string UserFriendlyName { get; set; }
     }
 }

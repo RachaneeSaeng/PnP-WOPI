@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.Caching;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
@@ -141,44 +140,45 @@ namespace com.microsoft.dx.officewopi.Utils
         /// </summary>
         public async static Task<bool> ValidateWopiProof(HttpContext context)
         {
-            // Make sure the request has the correct headers
-            if (context.Request.Headers[WopiRequestHeaders.PROOF] == null ||
-                context.Request.Headers[WopiRequestHeaders.TIME_STAMP] == null)
-                return false;
+            return true;
+            //// Make sure the request has the correct headers
+            //if (context.Request.Headers[WopiRequestHeaders.PROOF] == null ||
+            //    context.Request.Headers[WopiRequestHeaders.TIME_STAMP] == null)
+            //    return false;
 
-            // Set the requested proof values
-            var requestProof = context.Request.Headers[WopiRequestHeaders.PROOF];
-            var requestProofOld = String.Empty;
-            if (context.Request.Headers[WopiRequestHeaders.PROOF_OLD] != null)
-                requestProofOld = context.Request.Headers[WopiRequestHeaders.PROOF_OLD];
+            //// Set the requested proof values
+            //var requestProof = context.Request.Headers[WopiRequestHeaders.PROOF];
+            //var requestProofOld = String.Empty;
+            //if (context.Request.Headers[WopiRequestHeaders.PROOF_OLD] != null)
+            //    requestProofOld = context.Request.Headers[WopiRequestHeaders.PROOF_OLD];
 
-            // Get the WOPI proof info from discovery
-            var discoProof = await getWopiProof(context);
+            //// Get the WOPI proof info from discovery
+            //var discoProof = await getWopiProof(context);
 
-            // Encode the values into bytes
-            var accessTokenBytes = Encoding.UTF8.GetBytes(context.Request.QueryString["access_token"]);
-            var hostUrl = context.Request.Url.OriginalString.Replace(":44300", "").Replace(":443", "");
-            var hostUrlBytes = Encoding.UTF8.GetBytes(hostUrl.ToUpperInvariant());
-            var timeStampBytes = BitConverter.GetBytes(Convert.ToInt64(context.Request.Headers[WopiRequestHeaders.TIME_STAMP])).Reverse().ToArray();
+            //// Encode the values into bytes
+            //var accessTokenBytes = Encoding.UTF8.GetBytes(context.Request.QueryString["access_token"]);
+            //var hostUrl = context.Request.Url.OriginalString.Replace(":44300", "").Replace(":443", "");
+            //var hostUrlBytes = Encoding.UTF8.GetBytes(hostUrl.ToUpperInvariant());
+            //var timeStampBytes = BitConverter.GetBytes(Convert.ToInt64(context.Request.Headers[WopiRequestHeaders.TIME_STAMP])).Reverse().ToArray();
 
-            // Build expected proof
-            List<byte> expected = new List<byte>(
-                4 + accessTokenBytes.Length +
-                4 + hostUrlBytes.Length +
-                4 + timeStampBytes.Length);
+            //// Build expected proof
+            //List<byte> expected = new List<byte>(
+            //    4 + accessTokenBytes.Length +
+            //    4 + hostUrlBytes.Length +
+            //    4 + timeStampBytes.Length);
 
-            // Add the values to the expected variable
-            expected.AddRange(BitConverter.GetBytes(accessTokenBytes.Length).Reverse().ToArray());
-            expected.AddRange(accessTokenBytes);
-            expected.AddRange(BitConverter.GetBytes(hostUrlBytes.Length).Reverse().ToArray());
-            expected.AddRange(hostUrlBytes);
-            expected.AddRange(BitConverter.GetBytes(timeStampBytes.Length).Reverse().ToArray());
-            expected.AddRange(timeStampBytes);
-            byte[] expectedBytes = expected.ToArray();
+            //// Add the values to the expected variable
+            //expected.AddRange(BitConverter.GetBytes(accessTokenBytes.Length).Reverse().ToArray());
+            //expected.AddRange(accessTokenBytes);
+            //expected.AddRange(BitConverter.GetBytes(hostUrlBytes.Length).Reverse().ToArray());
+            //expected.AddRange(hostUrlBytes);
+            //expected.AddRange(BitConverter.GetBytes(timeStampBytes.Length).Reverse().ToArray());
+            //expected.AddRange(timeStampBytes);
+            //byte[] expectedBytes = expected.ToArray();
 
-            return (verifyProof(expectedBytes, requestProof, discoProof.value) ||
-                verifyProof(expectedBytes, requestProof, discoProof.oldvalue) ||
-                verifyProof(expectedBytes, requestProofOld, discoProof.value));
+            //return (verifyProof(expectedBytes, requestProof, discoProof.value) ||
+            //    verifyProof(expectedBytes, requestProof, discoProof.oldvalue) ||
+            //    verifyProof(expectedBytes, requestProofOld, discoProof.value));
         }
 
         /// <summary>
@@ -347,7 +347,7 @@ namespace com.microsoft.dx.officewopi.Utils
                 case FULLSCREEN:
                 case RECORDING:
                     // These are all broadcast related actions
-                    result = ph + "true";
+                    result = "";
                     break;
                 case THEME_ID:
                     result = ph + "1";
@@ -362,7 +362,7 @@ namespace com.microsoft.dx.officewopi.Utils
                     result = ph + "OfficeOnline"; //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.
                     break;
                 case WOPI_SOURCE:
-                    result = String.Format("{0}https://{1}/wopi/files/{2}", ph, authority, file.id.ToString()); //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.
+                    result = String.Format("{0}https://{1}/wopi/files/{2}", ph, authority, file.id.ToString());
                     break;
                 case SESSION_CONTEXT:
                     result = ""; //no value to specify

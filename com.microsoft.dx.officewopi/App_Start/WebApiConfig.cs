@@ -12,7 +12,7 @@ namespace com.microsoft.dx.officewopi
         public static void Register(HttpConfiguration config)
         {
             // Ignore AAD Auth for WebAPI...will be handled by WopiTokenValidationFilter class
-            config.SuppressDefaultHostAuthentication();
+            //config.SuppressDefaultHostAuthentication();
 
             // Web API routes
             config.MapHttpAttributeRoutes();

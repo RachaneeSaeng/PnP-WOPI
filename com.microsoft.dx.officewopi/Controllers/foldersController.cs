@@ -11,10 +11,10 @@ using com.microsoft.dx.officewopi.Security;
 
 namespace com.microsoft.dx.officewopi.Controllers
 {
-    [WopiTokenValidationFilter]
+    //[WopiTokenValidationFilter]
     public class foldersController : ApiController
     {
-        [WopiTokenValidationFilter]
+        //[WopiTokenValidationFilter]
         [HttpGet]
         [Route("wopi/folders/{id}")]
         public async Task<HttpResponseMessage> Get(Guid id)
@@ -22,7 +22,7 @@ namespace com.microsoft.dx.officewopi.Controllers
             return await HttpContext.Current.ProcessWopiRequest();
         }
 
-        [WopiTokenValidationFilter]
+        //[WopiTokenValidationFilter]
         [HttpGet]
         [Route("wopi/folders/{id}/contents")]
         public async Task<HttpResponseMessage> Contents(Guid id)
@@ -30,7 +30,7 @@ namespace com.microsoft.dx.officewopi.Controllers
             return await HttpContext.Current.ProcessWopiRequest();
         }
 
-        [WopiTokenValidationFilter]
+        //[WopiTokenValidationFilter]
         [HttpPost]
         [Route("wopi/folders/{id}")]
         public async Task<HttpResponseMessage> Post(Guid id)
@@ -38,7 +38,7 @@ namespace com.microsoft.dx.officewopi.Controllers
             return await HttpContext.Current.ProcessWopiRequest();
         }
 
-        [WopiTokenValidationFilter]
+        //[WopiTokenValidationFilter]
         [HttpPost]
         [Route("wopi/folders/{id}/contents")]
         public async Task<HttpResponseMessage> PostContents(Guid id)

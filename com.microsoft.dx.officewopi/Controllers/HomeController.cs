@@ -11,17 +11,17 @@ using System.Web.Mvc;
 
 namespace com.microsoft.dx.officewopi.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class HomeController : Controller
     {
         /// <summary>
         /// Index view displays all files for the signed in user
         /// </summary>
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult> Index()
         {
             // Get files for the user
-            var files = DocumentDBRepository<DetailedFileModel>.GetItems("Files", i => i.OwnerId == User.Identity.Name.ToLower()).ToList();
+            var files = DocumentDBRepository<DetailedFileModel>.GetItems("Files", i => true).ToList();
 
             // Populate valid actions for each of the files
             await files.PopulateActions();
@@ -33,7 +33,7 @@ namespace com.microsoft.dx.officewopi.Controllers
         /// <summary>
         /// Detail view hosts the WOPI host frame and loads the appropriate action view from Office Online
         /// </summary>
-        [Authorize]
+        //[Authorize]
         [Route("Home/Detail/{id}")]
         public async Task<ActionResult> Detail(Guid id)
         {
@@ -43,7 +43,7 @@ namespace com.microsoft.dx.officewopi.Controllers
 
             // Get the specific file from DocumentDB
             var file = DocumentDBRepository<FileModel>.GetItem("Files",
-                i => i.OwnerId == User.Identity.Name.ToLower() && i.id == id);
+                i => i.id == id);
 
             // Check for null file
             if (file == null)
@@ -61,9 +61,9 @@ namespace com.microsoft.dx.officewopi.Controllers
 
                 // Generate JWT token for the user/document
                 WopiSecurity wopiSecurity = new WopiSecurity();
-                var token = wopiSecurity.GenerateToken(User.Identity.Name.ToLower(), getUserContainer(), id.ToString());
-                ViewData["access_token"] = wopiSecurity.WriteToken(token);
-                ViewData["access_token_ttl"] = token.ValidTo.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
+                //var token = wopiSecurity.GenerateToken(User.Identity.Name.ToLower(), getUserContainer(), id.ToString());
+                //ViewData["access_token"] = wopiSecurity.WriteToken(token);
+                //ViewData["access_token_ttl"] = token.ValidTo.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
                 ViewData["wopi_urlsrc"] = urlsrc;
                 return View();
             }
@@ -78,7 +78,7 @@ namespace com.microsoft.dx.officewopi.Controllers
         /// Adds the submitted files for Azure Blob Storage and metadata into DocumentDB
         /// </summary>
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult> Add()
         {
             try
@@ -87,7 +87,7 @@ namespace com.microsoft.dx.officewopi.Controllers
                 DetailedFileModel file = new DetailedFileModel()
                 {
                     id = Guid.NewGuid(),
-                    OwnerId = User.Identity.Name.ToLower(),
+                    OwnerId = "rachanee.saeng@hotmail.com",
                     BaseFileName = HttpUtility.UrlDecode(Request["HTTP_X_FILE_NAME"]),
                     Size = Convert.ToInt32(Request["HTTP_X_FILE_SIZE"]),
                     Container = getUserContainer(),
@@ -120,7 +120,7 @@ namespace com.microsoft.dx.officewopi.Controllers
         /// Deletes the file from Azure Blob Storage and metadata into DocumentDB
         /// </summary>
         [HttpDelete]
-        [Authorize]
+        //[Authorize]
         [Route("Home/Delete/{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
