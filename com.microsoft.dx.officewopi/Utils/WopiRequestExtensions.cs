@@ -606,22 +606,22 @@ namespace com.microsoft.dx.officewopi.Utils
             string requestPath = request.Url.AbsolutePath.ToLower();
 
             // Remove /<...>/wopi/
-            string wopiPath = requestPath.Substring(requestPath.IndexOf(WopiRequestConst.WOPI_BASE_PATH) + WopiRequestConst.WOPI_BASE_PATH.Length);
+            string wopiPath = requestPath.Substring(requestPath.IndexOf(WopiRequestConsts.WOPI_BASE_PATH) + WopiRequestConsts.WOPI_BASE_PATH.Length);
 
             // Check the type of request being made
-            if (wopiPath.StartsWith(WopiRequestConst.WOPI_FILES_PATH))
+            if (wopiPath.StartsWith(WopiRequestConsts.WOPI_FILES_PATH))
             {
                 // This is a file-related request
 
                 // Remove /files/ from the beginning of wopiPath
-                string rawId = wopiPath.Substring(WopiRequestConst.WOPI_FILES_PATH.Length);
+                string rawId = wopiPath.Substring(WopiRequestConsts.WOPI_FILES_PATH.Length);
 
-                if (rawId.EndsWith(WopiRequestConst.WOPI_CONTENTS_PATH))
+                if (rawId.EndsWith(WopiRequestConsts.WOPI_CONTENTS_PATH))
                 {
                     // The rawId ends with /contents so this is a request to read/write the file contents
 
                     // Remove /contents from the end of rawId to get the actual file id
-                    requestData.Id = rawId.Substring(0, rawId.Length - WopiRequestConst.WOPI_CONTENTS_PATH.Length);
+                    requestData.Id = rawId.Substring(0, rawId.Length - WopiRequestConsts.WOPI_CONTENTS_PATH.Length);
 
                     // Check request verb to determine file operation
                     if (request.HttpMethod == "GET")
@@ -692,19 +692,19 @@ namespace com.microsoft.dx.officewopi.Utils
                     }
                 }
             }
-            else if (wopiPath.StartsWith(WopiRequestConst.WOPI_FOLDERS_PATH))
+            else if (wopiPath.StartsWith(WopiRequestConsts.WOPI_FOLDERS_PATH))
             {
                 // This is a folder-related request
 
                 // Remove /folders/ from the beginning of wopiPath
-                string rawId = wopiPath.Substring(WopiRequestConst.WOPI_FOLDERS_PATH.Length);
+                string rawId = wopiPath.Substring(WopiRequestConsts.WOPI_FOLDERS_PATH.Length);
 
-                if (rawId.EndsWith(WopiRequestConst.WOPI_CHILDREN_PATH))
+                if (rawId.EndsWith(WopiRequestConsts.WOPI_CHILDREN_PATH))
                 {
                     // rawId ends with /children, so it's an EnumerateChildren request.
 
                     // Remove /children from the end of rawId
-                    requestData.Id = rawId.Substring(0, WopiRequestConst.WOPI_CHILDREN_PATH.Length);
+                    requestData.Id = rawId.Substring(0, WopiRequestConsts.WOPI_CHILDREN_PATH.Length);
                     //requestData.RequestType = WopiRequestType.EnumerateChildren;
                 }
                 else
