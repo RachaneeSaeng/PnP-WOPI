@@ -136,55 +136,28 @@ namespace com.microsoft.dx.officewopi.Utils
         private static string GetPlaceholderValue(string placeholder, FileModel file, string authority)
         {
             var ph = placeholder.Substring(1, placeholder.IndexOf("="));
-            string result = "";
+
             switch (placeholder)
             {
                 case WopiUrlPlaceholders.BUSINESS_USER:
-                    result = ph + "1";
-                    break;
+                    return ph + "1";
                 case WopiUrlPlaceholders.DC_LLCC:
                 case WopiUrlPlaceholders.UI_LLCC:
-                    result = ph + "en-US";
-                    break;
-                case WopiUrlPlaceholders.DISABLE_ASYNC:
-                case WopiUrlPlaceholders.DISABLE_BROADCAST:
-                case WopiUrlPlaceholders.EMBDDED:
-                case WopiUrlPlaceholders.FULLSCREEN:
-                case WopiUrlPlaceholders.RECORDING:
-                    // These are all broadcast related actions
-                    result = "";
-                    break;
+                    return ph + "en-US";
                 case WopiUrlPlaceholders.THEME_ID:
-                    result = ph + "1";
-                    break;
+                    return ph + "1";
                 case WopiUrlPlaceholders.DISABLE_CHAT:
-                    result = ph + "0";
-                    break;
+                    return ph + "0";
                 case WopiUrlPlaceholders.PERFSTATS:
-                    result = ph + "0";
-                    break;
+                    return ph + "0";
                 case WopiUrlPlaceholders.VALIDATOR_TEST_CATEGORY:
-                    result = ph + "OfficeOnline"; //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.
-                    break;
+                    return ph + "OfficeOnline"; //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.                   
                 case WopiUrlPlaceholders.WOPI_SOURCE:
-                    result = String.Format("{0}https://{1}/wopi/files/{2}", ph, authority, file.id.ToString());
-                    break;
-                case WopiUrlPlaceholders.SESSION_CONTEXT:
-                    result = ""; //no value to specify
-                    break;
-                case WopiUrlPlaceholders.HOST_SESSION_ID:
-                    result = ""; //no value to specify
-                    break;
-                case WopiUrlPlaceholders.ACTIVITY_NAVIGATION_ID:
-                    result = ""; //no value to specify
-                    break;
+                    return String.Format("{0}https://{1}/wopi/files/{2}", ph, authority, file.id.ToString());
                 default:
-                    result = "";
-                    break;
+                    return "";
 
             }
-
-            return result;
         }
     }
 }
