@@ -33,7 +33,7 @@
                                 }
                                 else if (item.BaseFileName.IndexOf(".wopitest") != -1)
                                 {
-                                    <span>@item.BaseFileName (<a href='/Home/Detail/@item.id?action=view'>test</a> | <a href="#" onclick="deleteFile('@item.id')">delete</a>)</span>
+                                    <span>@item.BaseFileName (<a href='/Home/Detail/@item.id?action=view'>test view</a> | <a href='/Home/Detail/@item.id?action=getinfo'>test getinfo</a> | <a href="#" onclick="deleteFile('@item.id')">delete</a>)</span>
                                 }
                                 else
                                 {
@@ -91,7 +91,7 @@
                         var html = "<tr id='file_" + data.file.id + "'><td><span>" + data.file.BaseFileName + " (";
                         if (data.file.Actions.length > 0) {
                             if (data.file.BaseFileName.indexOf(".wopitest") != -1)
-                                html += "<a href='/Home/Detail/" + data.file.id + "?action=view'>test</a> | ";
+                                html += "<a href='/Home/Detail/" + data.file.id + "?action=view'>test view</a> | <a href='/Home/Detail/" + data.file.id + "?action=getinfo'>test-getinfo</a> | ";
                             else
                                 html += "<a href='/Home/Detail/" + data.file.id + "?action=view'>view</a> | <a href='/Home/Detail/" + data.file.id + "?action=edit'>edit</a> | ";
                         }

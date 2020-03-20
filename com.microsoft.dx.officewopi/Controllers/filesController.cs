@@ -1,5 +1,4 @@
-﻿using com.microsoft.dx.officewopi.Security;
-using com.microsoft.dx.officewopi.Utils;
+﻿using com.microsoft.dx.officewopi.Utils;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -17,6 +16,7 @@ namespace com.microsoft.dx.officewopi.Controllers
         public async Task<HttpResponseMessage> Get(Guid id)
         {
             //Handles CheckFileInfo
+            var queryString = HttpContext.Current.Request.QueryString["access_token"];
             var result = await HttpContext.Current.ProcessWopiRequest();
             return result;
         }

@@ -1,9 +1,6 @@
 ﻿using com.microsoft.dx.officewopi.Models;
-using com.microsoft.dx.officewopi.Models.Wopi;
-using com.microsoft.dx.officewopi.Security;
 using com.microsoft.dx.officewopi.Utils;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -42,17 +39,15 @@ namespace com.microsoft.dx.officewopi.Controllers
                 return RedirectToAction("Error", "Home", new { error = "No action provided" });
 
             // Get the specific file from DocumentDB
-            var file = DocumentDBRepository<FileModel>.GetItem("Files",
-                i => i.id == id);
+            var file = DocumentDBRepository<DetailedFileModel>.GetItem("Files", i => i.id == id);
 
             // Check for null file
             if (file == null)
                 return RedirectToAction("Error", "Home", new { error = "Files does not exist" });
 
             // Use discovery to determine endpoint to leverage
-            List<WopiAction> discoData = await WopiUtil.GetDiscoveryInfo();
-            var fileExt = file.BaseFileName.Substring(file.BaseFileName.LastIndexOf('.') + 1).ToLower();
-            var action = discoData.FirstOrDefault(i => i.name == Request["action"] && i.ext == fileExt);
+            await file.PopulateActions();
+            var action = file.Actions.FirstOrDefault(i => i.name == Request["action"]);
 
             // Make sure the action isn't null
             if (action != null)
@@ -60,7 +55,7 @@ namespace com.microsoft.dx.officewopi.Controllers
                 string urlsrc = WopiUtil.GetActionUrl(action, file, Request.Url.Authority);
 
                 // Generate JWT token for the user/document
-                WopiSecurity wopiSecurity = new WopiSecurity();
+                // WopiSecurity wopiSecurity = new WopiSecurity();
                 //var token = wopiSecurity.GenerateToken(User.Identity.Name.ToLower(), getUserContainer(), id.ToString());
                 //ViewData["access_token"] = wopiSecurity.WriteToken(token);
                 //ViewData["access_token_ttl"] = token.ValidTo.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;

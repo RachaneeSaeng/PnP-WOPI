@@ -6,22 +6,16 @@ using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.Caching;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-using System.Web;
 using System.Xml.Linq;
 
 namespace com.microsoft.dx.officewopi.Utils
 {
+    /// <summary>
+    /// Contains method to support generating iframe request to Wopi
+    /// </summary>
     public static class WopiUtil
     {
-        //WOPI protocol constants
-        public const string WOPI_BASE_PATH = @"/wopi/";
-        public const string WOPI_CHILDREN_PATH = @"/children";
-        public const string WOPI_CONTENTS_PATH = @"/contents";
-        public const string WOPI_FILES_PATH = @"files/";
-        public const string WOPI_FOLDERS_PATH = @"folders/";
-
         /// <summary>
         /// Populates a list of files with action details from WOPI discovery
         /// </summary>
@@ -119,7 +113,7 @@ namespace com.microsoft.dx.officewopi.Utils
                 if (urlsrc.Contains(p))
                 {
                     // Replace the placeholder value accordingly
-                    var ph = WopiUrlPlaceholders.GetPlaceholderValue(p, file, authority);
+                    var ph = GetPlaceholderValue(p, file, authority);
                     if (!String.IsNullOrEmpty(ph))
                     {
                         urlsrc = urlsrc.Replace(p, ph + "&");
@@ -136,195 +130,6 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Validates the WOPI Proof on an incoming WOPI request
-        /// </summary>
-        public async static Task<bool> ValidateWopiProof(HttpContext context)
-        {
-            return true;
-            //// Make sure the request has the correct headers
-            //if (context.Request.Headers[WopiRequestHeaders.PROOF] == null ||
-            //    context.Request.Headers[WopiRequestHeaders.TIME_STAMP] == null)
-            //    return false;
-
-            //// Set the requested proof values
-            //var requestProof = context.Request.Headers[WopiRequestHeaders.PROOF];
-            //var requestProofOld = String.Empty;
-            //if (context.Request.Headers[WopiRequestHeaders.PROOF_OLD] != null)
-            //    requestProofOld = context.Request.Headers[WopiRequestHeaders.PROOF_OLD];
-
-            //// Get the WOPI proof info from discovery
-            //var discoProof = await getWopiProof(context);
-
-            //// Encode the values into bytes
-            //var accessTokenBytes = Encoding.UTF8.GetBytes(context.Request.QueryString["access_token"]);
-            //var hostUrl = context.Request.Url.OriginalString.Replace(":44300", "").Replace(":443", "");
-            //var hostUrlBytes = Encoding.UTF8.GetBytes(hostUrl.ToUpperInvariant());
-            //var timeStampBytes = BitConverter.GetBytes(Convert.ToInt64(context.Request.Headers[WopiRequestHeaders.TIME_STAMP])).Reverse().ToArray();
-
-            //// Build expected proof
-            //List<byte> expected = new List<byte>(
-            //    4 + accessTokenBytes.Length +
-            //    4 + hostUrlBytes.Length +
-            //    4 + timeStampBytes.Length);
-
-            //// Add the values to the expected variable
-            //expected.AddRange(BitConverter.GetBytes(accessTokenBytes.Length).Reverse().ToArray());
-            //expected.AddRange(accessTokenBytes);
-            //expected.AddRange(BitConverter.GetBytes(hostUrlBytes.Length).Reverse().ToArray());
-            //expected.AddRange(hostUrlBytes);
-            //expected.AddRange(BitConverter.GetBytes(timeStampBytes.Length).Reverse().ToArray());
-            //expected.AddRange(timeStampBytes);
-            //byte[] expectedBytes = expected.ToArray();
-
-            //return (verifyProof(expectedBytes, requestProof, discoProof.value) ||
-            //    verifyProof(expectedBytes, requestProof, discoProof.oldvalue) ||
-            //    verifyProof(expectedBytes, requestProofOld, discoProof.value));
-        }
-
-        /// <summary>
-        /// Verifies the proof against a specified key
-        /// </summary>
-        private static bool verifyProof(byte[] expectedProof, string proofFromRequest, string proofFromDiscovery)
-        {
-            using (RSACryptoServiceProvider rsaProvider = new RSACryptoServiceProvider())
-            {
-                try
-                {
-                    rsaProvider.ImportCspBlob(Convert.FromBase64String(proofFromDiscovery));
-                    return rsaProvider.VerifyData(expectedProof, "SHA256", Convert.FromBase64String(proofFromRequest));
-                }
-                catch (FormatException)
-                {
-                    return false;
-                }
-                catch (CryptographicException)
-                {
-                    return false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the WOPI proof details from the WOPI discovery endpoint and caches it appropriately
-        /// </summary>
-        internal async static Task<WopiProof> getWopiProof(HttpContext context)
-        {
-            WopiProof wopiProof = null;
-
-            // Check cache for this data
-            MemoryCache memoryCache = MemoryCache.Default;
-            if (memoryCache.Contains("WopiProof"))
-                wopiProof = (WopiProof)memoryCache["WopiProof"];
-            else
-            {
-                HttpClient client = new HttpClient();
-                using (HttpResponseMessage response = await client.GetAsync(ConfigurationManager.AppSettings["WopiDiscovery"]))
-                {
-                    if (response.IsSuccessStatusCode)
-                    {
-                        // Read the xml string from the response
-                        string xmlString = await response.Content.ReadAsStringAsync();
-
-                        // Parse the xml string into Xml
-                        var discoXml = XDocument.Parse(xmlString);
-
-                        // Convert the discovery xml into list of WopiApp
-                        var proof = discoXml.Descendants("proof-key").FirstOrDefault();
-                        wopiProof = new WopiProof()
-                        {
-                            value = proof.Attribute("value").Value,
-                            modulus = proof.Attribute("modulus").Value,
-                            exponent = proof.Attribute("exponent").Value,
-                            oldvalue = proof.Attribute("oldvalue").Value,
-                            oldmodulus = proof.Attribute("oldmodulus").Value,
-                            oldexponent = proof.Attribute("oldexponent").Value
-                        };
-
-                        // Add to cache for 20min
-                        memoryCache.Add("WopiProof", wopiProof, DateTimeOffset.Now.AddMinutes(20));
-                    }
-                }
-            }
-
-            return wopiProof;
-        }
-    }
-
-    /// <summary>
-    /// Contains valid WOPI response headers
-    /// </summary>
-    public class WopiResponseHeaders
-    {
-        //WOPI Header Consts
-        public const string HOST_ENDPOINT = "X-WOPI-HostEndpoint";
-        public const string INVALID_FILE_NAME_ERROR = "X-WOPI-InvalidFileNameError";
-        public const string LOCK = "X-WOPI-Lock";
-        public const string LOCK_FAILURE_REASON = "X-WOPI-LockFailureReason";
-        public const string LOCKED_BY_OTHER_INTERFACE = "X-WOPI-LockedByOtherInterface";
-        public const string MACHINE_NAME = "X-WOPI-MachineName";
-        public const string PREF_TRACE = "X-WOPI-PerfTrace";
-        public const string SERVER_ERROR = "X-WOPI-ServerError";
-        public const string SERVER_VERSION = "X-WOPI-ServerVersion";
-        public const string VALID_RELATIVE_TARGET = "X-WOPI-ValidRelativeTarget";
-    }
-
-    /// <summary>
-    /// Contains valid WOPI request headers
-    /// </summary>
-    public class WopiRequestHeaders
-    {
-        //WOPI Header Consts
-        public const string APP_ENDPOINT = "X-WOPI-AppEndpoint";
-        public const string CLIENT_VERSION = "X-WOPI-ClientVersion";
-        public const string CORRELATION_ID = "X-WOPI-CorrelationId";
-        public const string LOCK = "X-WOPI-Lock";
-        public const string MACHINE_NAME = "X-WOPI-MachineName";
-        public const string MAX_EXPECTED_SIZE = "X-WOPI-MaxExpectedSize";
-        public const string OLD_LOCK = "X-WOPI-OldLock";
-        public const string OVERRIDE = "X-WOPI-Override";
-        public const string OVERWRITE_RELATIVE_TARGET = "X-WOPI-OverwriteRelativeTarget";
-        public const string PREF_TRACE_REQUESTED = "X-WOPI-PerfTraceRequested";
-        public const string PROOF = "X-WOPI-Proof";
-        public const string PROOF_OLD = "X-WOPI-ProofOld";
-        public const string RELATIVE_TARGET = "X-WOPI-RelativeTarget";
-        public const string REQUESTED_NAME = "X-WOPI-RequestedName";
-        public const string SESSION_CONTEXT = "X-WOPI-SessionContext";
-        public const string SIZE = "X-WOPI-Size";
-        public const string SUGGESTED_TARGET = "X-WOPI-SuggestedTarget";
-        public const string TIME_STAMP = "X-WOPI-TimeStamp";
-    }
-
-    /// <summary>
-    /// Contains all valid URL placeholders for different WOPI actions
-    /// </summary>
-    public class WopiUrlPlaceholders
-    {
-        public static List<string> Placeholders = new List<string>() {
-            BUSINESS_USER, DC_LLCC, DISABLE_CHAT, PERFSTATS,UI_LLCC,
-            HOST_SESSION_ID, SESSION_CONTEXT, WOPI_SOURCE, ACTIVITY_NAVIGATION_ID,
-            DISABLE_ASYNC, DISABLE_BROADCAST, EMBDDED, FULLSCREEN,
-            RECORDING, THEME_ID, VALIDATOR_TEST_CATEGORY
-        };
-
-        public const string UI_LLCC = "<ui=UI_LLCC&>";
-        public const string DC_LLCC = "<rs=DC_LLCC&>";
-        public const string DISABLE_CHAT = "<dchat=DISABLE_CHAT&>";
-        public const string HOST_SESSION_ID = "<hid=HOST_SESSION_ID&>";
-        public const string SESSION_CONTEXT = "<sc=SESSION_CONTEXT&>";
-        public const string WOPI_SOURCE = "<wopisrc=WOPI_SOURCE&>";
-        public const string PERFSTATS = "<showpagestats=PERFSTATS&>";
-        public const string BUSINESS_USER = "<IsLicensedUser=BUSINESS_USER&>";
-        public const string ACTIVITY_NAVIGATION_ID = "<actnavid=ACTIVITY_NAVIGATION_ID&>";
-
-        public const string DISABLE_ASYNC = "<na=DISABLE_ASYNC&>";
-        public const string DISABLE_BROADCAST = "<vp=DISABLE_BROADCAST&>";
-        public const string EMBDDED = "<e=EMBEDDED&>";
-        public const string FULLSCREEN = "<fs=FULLSCREEN&>";
-        public const string RECORDING = "<rec=RECORDING&>";
-        public const string THEME_ID = "<thm=THEME_ID&>";
-        public const string VALIDATOR_TEST_CATEGORY = "<testcategory=VALIDATOR_TEST_CATEGORY>";
-
-        /// <summary>
         /// Sets a specific WOPI URL placeholder with the correct value
         /// Most of these are hard-coded in this WOPI implementation
         /// </summary>
@@ -334,43 +139,43 @@ namespace com.microsoft.dx.officewopi.Utils
             string result = "";
             switch (placeholder)
             {
-                case BUSINESS_USER:
+                case WopiUrlPlaceholders.BUSINESS_USER:
                     result = ph + "1";
                     break;
-                case DC_LLCC:
-                case UI_LLCC:
-                    result = ph + "1033"; // en-US
+                case WopiUrlPlaceholders.DC_LLCC:
+                case WopiUrlPlaceholders.UI_LLCC:
+                    result = ph + "en-US";
                     break;
-                case DISABLE_ASYNC:
-                case DISABLE_BROADCAST:
-                case EMBDDED:
-                case FULLSCREEN:
-                case RECORDING:
+                case WopiUrlPlaceholders.DISABLE_ASYNC:
+                case WopiUrlPlaceholders.DISABLE_BROADCAST:
+                case WopiUrlPlaceholders.EMBDDED:
+                case WopiUrlPlaceholders.FULLSCREEN:
+                case WopiUrlPlaceholders.RECORDING:
                     // These are all broadcast related actions
                     result = "";
                     break;
-                case THEME_ID:
+                case WopiUrlPlaceholders.THEME_ID:
                     result = ph + "1";
                     break;
-                case DISABLE_CHAT:
+                case WopiUrlPlaceholders.DISABLE_CHAT:
                     result = ph + "0";
                     break;
-                case PERFSTATS:
+                case WopiUrlPlaceholders.PERFSTATS:
                     result = ph + "0";
                     break;
-                case VALIDATOR_TEST_CATEGORY:
+                case WopiUrlPlaceholders.VALIDATOR_TEST_CATEGORY:
                     result = ph + "OfficeOnline"; //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.
                     break;
-                case WOPI_SOURCE:
+                case WopiUrlPlaceholders.WOPI_SOURCE:
                     result = String.Format("{0}https://{1}/wopi/files/{2}", ph, authority, file.id.ToString());
                     break;
-                case SESSION_CONTEXT:
+                case WopiUrlPlaceholders.SESSION_CONTEXT:
                     result = ""; //no value to specify
                     break;
-                case HOST_SESSION_ID:
+                case WopiUrlPlaceholders.HOST_SESSION_ID:
                     result = ""; //no value to specify
                     break;
-                case ACTIVITY_NAVIGATION_ID:
+                case WopiUrlPlaceholders.ACTIVITY_NAVIGATION_ID:
                     result = ""; //no value to specify
                     break;
                 default:
