@@ -39,7 +39,7 @@ namespace com.microsoft.dx.officewopi.Utils
     /// <summary>
     /// Constains paths and confiurations to handle WOPI requests
     /// </summary>
-    public static class WopiRequestConsts
+    public static class WopiRequestPaths
     {
         //WOPI protocol constants
         public const string WOPI_BASE_PATH = @"/wopi/";
