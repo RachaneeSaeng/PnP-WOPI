@@ -221,7 +221,7 @@
     <Compile Include="Models\Wopi\WopiRequestType.cs" />
     <Compile Include="Security\WopiTokenValidationFilter.cs" />
     <Compile Include="Security\WopiSecurity.cs" />
-    <Compile Include="Utils\WopiConst.cs" />
+    <Compile Include="Utils\WopiConsts.cs" />
     <Compile Include="Utils\WopiRequestExtensions.cs" />
     <Compile Include="Models\FileModel.cs" />
     <Compile Include="Models\Wopi\WopiRequest.cs" />
@@ -230,6 +230,7 @@
     <Compile Include="Utils\AzureStorageUtil.cs" />
     <Compile Include="Utils\DocumentDBRepository.cs" />
     <Compile Include="Utils\SettingsHelper.cs" />
+    <Compile Include="Utils\WopiRequestHandler.cs" />
     <Compile Include="Utils\WopiRequestUtil.cs" />
     <Compile Include="Utils\WopiUtil.cs" />
   </ItemGroup>

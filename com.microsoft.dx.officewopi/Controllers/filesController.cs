@@ -16,8 +16,7 @@ namespace com.microsoft.dx.officewopi.Controllers
         public async Task<HttpResponseMessage> Get(Guid id)
         {
             //Handles CheckFileInfo
-            var queryString = HttpContext.Current.Request.QueryString["access_token"];
-            var result = await HttpContext.Current.ProcessWopiRequest();
+            var result = await WopiRequestHandler.ProcessWopiRequest(HttpContext.Current);
             return result;
         }
 
@@ -27,7 +26,7 @@ namespace com.microsoft.dx.officewopi.Controllers
         public async Task<HttpResponseMessage> Contents(Guid id)
         {
             //Handles GetFile
-            return await HttpContext.Current.ProcessWopiRequest();
+            return await WopiRequestHandler.ProcessWopiRequest(HttpContext.Current);
         }
 
         //[WopiTokenValidationFilter]
@@ -36,7 +35,7 @@ namespace com.microsoft.dx.officewopi.Controllers
         public async Task<HttpResponseMessage> Post(Guid id)
         {
             //Handles Lock, GetLock, RefreshLock, Unlock, UnlockAndRelock, PutRelativeFile, RenameFile, PutUserInfo
-            return await HttpContext.Current.ProcessWopiRequest();
+            return await WopiRequestHandler.ProcessWopiRequest(HttpContext.Current);
         }
 
         //[WopiTokenValidationFilter]
@@ -45,7 +44,7 @@ namespace com.microsoft.dx.officewopi.Controllers
         public async Task<HttpResponseMessage> PostContents(Guid id)
         {
             //Handles PutFile
-            return await HttpContext.Current.ProcessWopiRequest();
+            return await WopiRequestHandler.ProcessWopiRequest(HttpContext.Current);
         }
     }
 }

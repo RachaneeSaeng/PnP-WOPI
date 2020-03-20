@@ -44,7 +44,7 @@ namespace com.microsoft.dx.officewopi.Utils
         /// <summary>
         /// Gets the discovery information from WOPI discovery and caches it appropriately
         /// </summary>
-        public async static Task<List<WopiAction>> GetDiscoveryInfo()
+        private async static Task<List<WopiAction>> GetDiscoveryInfo()
         {
             List<WopiAction> actions = new List<WopiAction>();
 
@@ -133,7 +133,7 @@ namespace com.microsoft.dx.officewopi.Utils
         /// Sets a specific WOPI URL placeholder with the correct value
         /// Most of these are hard-coded in this WOPI implementation
         /// </summary>
-        public static string GetPlaceholderValue(string placeholder, FileModel file, string authority)
+        private static string GetPlaceholderValue(string placeholder, FileModel file, string authority)
         {
             var ph = placeholder.Substring(1, placeholder.IndexOf("="));
             string result = "";
