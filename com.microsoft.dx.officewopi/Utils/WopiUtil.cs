@@ -108,19 +108,19 @@ namespace com.microsoft.dx.officewopi.Utils
 
             // Look through the action placeholders
             var phCnt = 0;
-            foreach (var p in WopiUrlPlaceholders.Placeholders)
+            foreach (var ph in WopiUrlPlaceholders.Placeholders)
             {
-                if (urlsrc.Contains(p))
+                if (urlsrc.Contains(ph))
                 {
                     // Replace the placeholder value accordingly
-                    var ph = GetPlaceholderValue(p, file, authority);
-                    if (!String.IsNullOrEmpty(ph))
+                    var queryStr = GetQueryStringValue(ph, file, authority);
+                    if (!String.IsNullOrEmpty(queryStr) && phCnt > 0)
                     {
-                        urlsrc = urlsrc.Replace(p, ph + "&");
+                        urlsrc = urlsrc.Replace(ph, "&" + queryStr);
                         phCnt++;
                     }
                     else
-                        urlsrc = urlsrc.Replace(p, ph);
+                        urlsrc = urlsrc.Replace(ph, queryStr);
                 }
             }
 
@@ -133,27 +133,27 @@ namespace com.microsoft.dx.officewopi.Utils
         /// Sets a specific WOPI URL placeholder with the correct value
         /// Most of these are hard-coded in this WOPI implementation
         /// </summary>
-        private static string GetPlaceholderValue(string placeholder, FileModel file, string authority)
+        private static string GetQueryStringValue(string placeholder, FileModel file, string authority)
         {
-            var ph = placeholder.Substring(1, placeholder.IndexOf("="));
+            var parameterName = placeholder.Substring(1, placeholder.IndexOf("="));
 
             switch (placeholder)
             {
                 case WopiUrlPlaceholders.BUSINESS_USER:
-                    return ph + "1";
+                    return parameterName + "1";
                 case WopiUrlPlaceholders.DC_LLCC:
                 case WopiUrlPlaceholders.UI_LLCC:
-                    return ph + "en-US";
+                    return parameterName + "en-US";
                 case WopiUrlPlaceholders.THEME_ID:
-                    return ph + "1";
+                    return parameterName + "1";
                 case WopiUrlPlaceholders.DISABLE_CHAT:
-                    return ph + "0";
+                    return parameterName + "0";
                 case WopiUrlPlaceholders.PERFSTATS:
-                    return ph + "0";
+                    return parameterName + "0";
                 case WopiUrlPlaceholders.VALIDATOR_TEST_CATEGORY:
-                    return ph + "OfficeOnline"; //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.                   
+                    return parameterName + "OfficeOnline"; //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.                   
                 case WopiUrlPlaceholders.WOPI_SOURCE:
-                    return String.Format("{0}https://{1}/wopi/files/{2}", ph, authority, file.id.ToString());
+                    return String.Format("{0}https://{1}/wopi/files/{2}", parameterName, authority, file.id.ToString());
                 default:
                     return "";
 
