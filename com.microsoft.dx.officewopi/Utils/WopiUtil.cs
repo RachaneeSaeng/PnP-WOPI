@@ -114,9 +114,9 @@ namespace com.microsoft.dx.officewopi.Utils
                 {
                     // Replace the placeholder value accordingly
                     var queryStr = GetQueryStringValue(ph, file, authority);
-                    if (!String.IsNullOrEmpty(queryStr) && phCnt > 0)
+                    if (!String.IsNullOrEmpty(queryStr))
                     {
-                        urlsrc = urlsrc.Replace(ph, "&" + queryStr);
+                        urlsrc = urlsrc.Replace(ph, queryStr + "&");
                         phCnt++;
                     }
                     else
