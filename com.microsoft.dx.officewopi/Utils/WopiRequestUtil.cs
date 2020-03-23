@@ -37,12 +37,14 @@ namespace com.microsoft.dx.officewopi.Utils
                 requestProofOld = context.Request.Headers[WopiRequestHeaders.PROOF_OLD];
 
             // Get the WOPI proof info from discovery
-            var discoProof = await getWopiProof();
+            var discoProofPublicKey = await getWopiProofPublicKey();
 
             // Encode the values into bytes
             var accessTokenBytes = Encoding.UTF8.GetBytes(context.Request.QueryString["access_token"]);
+
             var hostUrl = context.Request.Url.OriginalString.Replace(":44300", "").Replace(":443", "");
             var hostUrlBytes = Encoding.UTF8.GetBytes(hostUrl.ToUpperInvariant());
+
             var timeStampBytes = BitConverter.GetBytes(Convert.ToInt64(context.Request.Headers[WopiRequestHeaders.TIME_STAMP])).Reverse().ToArray();
 
             // Build expected proof
@@ -60,21 +62,21 @@ namespace com.microsoft.dx.officewopi.Utils
             expected.AddRange(timeStampBytes);
             byte[] expectedBytes = expected.ToArray();
 
-            return (verifyProof(expectedBytes, requestProof, discoProof.value) ||
-                verifyProof(expectedBytes, requestProof, discoProof.oldvalue) ||
-                verifyProof(expectedBytes, requestProofOld, discoProof.value));
+            return (verifyProof(expectedBytes, requestProof, discoProofPublicKey.value) ||
+                verifyProof(expectedBytes, requestProofOld, discoProofPublicKey.value) ||
+                verifyProof(expectedBytes, requestProof, discoProofPublicKey.oldvalue));
         }
 
 
         /// <summary>
         /// Gets the WOPI proof details from the WOPI discovery endpoint and caches it appropriately
         /// </summary>
-        private async static Task<WopiProof> getWopiProof()
+        private async static Task<WopiProofPublicKey> getWopiProofPublicKey()
         {
             // Check cache for this data
             MemoryCache memoryCache = MemoryCache.Default;
             if (memoryCache.Contains("WopiProof"))
-                return (WopiProof)memoryCache["WopiProof"];
+                return (WopiProofPublicKey)memoryCache["WopiProof"];
 
             HttpClient client = new HttpClient();
             using (HttpResponseMessage response = await client.GetAsync(ConfigurationManager.AppSettings["WopiDiscovery"]))
@@ -89,14 +91,14 @@ namespace com.microsoft.dx.officewopi.Utils
 
                     // Convert the discovery xml into list of WopiApp
                     var proof = discoXml.Descendants("proof-key").FirstOrDefault();
-                    var wopiProof = new WopiProof()
+                    var wopiProof = new WopiProofPublicKey()
                     {
                         value = proof.Attribute("value").Value,
-                        modulus = proof.Attribute("modulus").Value,
-                        exponent = proof.Attribute("exponent").Value,
+                        //modulus = proof.Attribute("modulus").Value,
+                        //exponent = proof.Attribute("exponent").Value,
                         oldvalue = proof.Attribute("oldvalue").Value,
-                        oldmodulus = proof.Attribute("oldmodulus").Value,
-                        oldexponent = proof.Attribute("oldexponent").Value
+                        //oldmodulus = proof.Attribute("oldmodulus").Value,
+                        //oldexponent = proof.Attribute("oldexponent").Value
                     };
 
                     // Add to cache for 20min
@@ -113,13 +115,13 @@ namespace com.microsoft.dx.officewopi.Utils
         /// <summary>
         /// Verifies the proof against a specified key
         /// </summary>
-        private static bool verifyProof(byte[] expectedProof, string proofFromRequest, string proofFromDiscovery)
+        private static bool verifyProof(byte[] expectedProof, string proofFromRequest, string discoPublicKey)
         {
             using (RSACryptoServiceProvider rsaProvider = new RSACryptoServiceProvider())
             {
                 try
                 {
-                    rsaProvider.ImportCspBlob(Convert.FromBase64String(proofFromDiscovery));
+                    rsaProvider.ImportCspBlob(Convert.FromBase64String(discoPublicKey));
                     return rsaProvider.VerifyData(expectedProof, "SHA256", Convert.FromBase64String(proofFromRequest));
                 }
                 catch (FormatException)

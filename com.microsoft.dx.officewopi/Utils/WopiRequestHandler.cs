@@ -20,7 +20,7 @@ namespace com.microsoft.dx.officewopi.Utils
             {
                 // Validate WOPI Proof (ie - ensure request came from Office Online)
                 if (!(await WopiRequestUtil.ValidateWopiProof(context)))
-                    return ReturnStatus(HttpStatusCode.InternalServerError, "Server Error");
+                    return ReturnStatus(HttpStatusCode.InternalServerError, "Wopi proof is invalid");
 
                 // Lookup the file in the database
                 var file = DocumentDBRepository<DetailedFileModel>.GetItem("Files", i => i.id == id);
