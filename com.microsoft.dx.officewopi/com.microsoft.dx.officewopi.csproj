@@ -230,7 +230,6 @@
     <Compile Include="Utils\DocumentDBRepository.cs" />
     <Compile Include="Utils\SettingsHelper.cs" />
     <Compile Include="Utils\WopiRequestHandler.cs" />
-    <Compile Include="Utils\WopiRequestUtil.cs" />
     <Compile Include="Utils\WopiUtil.cs" />
   </ItemGroup>
   <ItemGroup>
