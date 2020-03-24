@@ -369,7 +369,7 @@ namespace com.microsoft.dx.officewopi.Utils
                 else
                 {
                     // Suggested mode...might just be an extension
-                    fileName = context.Request.Headers[WopiRequestHeaders.RELATIVE_TARGET];
+                    fileName = context.Request.Headers[WopiRequestHeaders.SUGGESTED_TARGET];
                     if (fileName.IndexOf('.') == 0)
                         fileName = file.BaseFileName.Substring(0, file.BaseFileName.LastIndexOf('.')) + fileName;
                 }
@@ -399,8 +399,9 @@ namespace com.microsoft.dx.officewopi.Utils
                 var token = security.GenerateToken(newFile.OwnerId, newFile.Container, newFile.id.ToString());
                 var tokenStr = security.WriteToken(token);
 
-                var view = file.Actions.FirstOrDefault(i => i.name == "view");
-                var edit = file.Actions.FirstOrDefault(i => i.name == "edit");
+                await newFile.PopulateActions();
+                var view = newFile.Actions.FirstOrDefault(i => i.name == "view");
+                var edit = newFile.Actions.FirstOrDefault(i => i.name == "edit");
 
                 // Prepare the Json response
                 var jsonObj = new
