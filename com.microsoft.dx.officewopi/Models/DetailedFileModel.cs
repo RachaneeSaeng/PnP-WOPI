@@ -25,6 +25,18 @@ namespace com.microsoft.dx.officewopi.Models
         [JsonProperty(PropertyName = "HostViewUrl")]
         public string HostViewUrl { get; set; }
 
+        [JsonProperty(PropertyName = "HostEmbeddedViewUrl")]
+        public string HostEmbeddedViewUrl { get; set; }
+
+        [JsonProperty(PropertyName = "FileVersionUrl")]
+        public string FileVersionUrl { get; set; }
+
+        /// <summary>
+        /// the DownloadUrl is used to provide a direct download link to the file if the user’s subscription check fails.
+        /// </summary>
+        [JsonProperty(PropertyName = "DownloadUrl")]
+        public string DownloadUrl { get; set; }
+
         [JsonProperty(PropertyName = "SupportsCoauth")]
         public bool SupportsCoauth
         {
@@ -115,7 +127,7 @@ namespace com.microsoft.dx.officewopi.Models
         [JsonProperty(PropertyName = "UserCanAttend")] //Broadcast only
         public bool UserCanAttend
         {
-            get { return false; }
+            get { return true; }
         }
 
         [JsonProperty(PropertyName = "UserCanNotWriteRelative")]
@@ -127,7 +139,7 @@ namespace com.microsoft.dx.officewopi.Models
         [JsonProperty(PropertyName = "UserCanPresent")] //Broadcast only
         public bool UserCanPresent
         {
-            get { return false; }
+            get { return true; }
         }
 
         [JsonProperty(PropertyName = "UserCanRename")]
@@ -151,7 +163,19 @@ namespace com.microsoft.dx.officewopi.Models
         [JsonProperty(PropertyName = "Actions")]
         public List<WopiAction> Actions { get; set; }
 
+
         [JsonProperty(PropertyName = "UserFriendlyName")]
         public string UserFriendlyName { get; set; }
+
+        [JsonProperty(PropertyName = "BreadcrumbBrandName")]
+        public string BreadcrumbBrandName { get; set; }
+
+        [JsonProperty(PropertyName = "BreadcrumbBrandUrl")]
+        public string BreadcrumbBrandUrl { get; set; }
+
+        [JsonProperty(PropertyName = "AllowErrorReportPrompt")]
+        public bool AllowErrorReportPrompt { get; set; }
+
+
     }
 }

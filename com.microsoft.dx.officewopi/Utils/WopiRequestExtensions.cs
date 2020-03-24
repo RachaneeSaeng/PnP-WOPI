@@ -16,7 +16,11 @@ namespace com.microsoft.dx.officewopi.Utils
     public static class WopiRequestExtensions
     {
         /// <summary>
-        /// Processes a CheckFileInfo request
+        /// The CheckFileInfo operation is one of the most important WOPI operations. 
+        /// This operation must be implemented for all WOPI actions. 
+        /// CheckFileInfo returns information about a file, a user’s permissions on that file, 
+        /// and general information about the capabilities that the WOPI host has on the file. 
+        /// In addition, some CheckFileInfo properties can influence the appearance and behavior of WOPI clients.
         /// </summary>
         /// <remarks>
         /// For full documentation on CheckFileInfo, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/CheckFileInfo.html
@@ -33,7 +37,7 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a GetFile request
+        /// The GetFile operation retrieves a file from a host.
         /// </summary>
         /// <remarks>
         /// For full documentation on GetFile, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/GetFile.html
@@ -50,7 +54,9 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a Lock request
+        /// The Lock operation locks a file for editing by the WOPI client application instance that requested the lock. 
+        /// To support editing files, WOPI clients require that the WOPI host support locking files. 
+        /// When locked, a file should not be writable by other applications.
         /// </summary>
         /// <remarks>
         /// For full documentation on Lock, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/Lock.html
@@ -91,7 +97,8 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a GetLock request
+        /// The GetLock operation retrieves a lock on a file. Note that this operation does not create a new lock. 
+        /// Rather, this operation always returns the current lock value in the X-WOPI-Lock response header.
         /// </summary>
         /// <remarks>
         /// For full documentation on GetLock, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/GetLock.html
@@ -131,7 +138,7 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a RefreshLock request
+        /// The RefreshLock operation refreshes the lock on a file by resetting its automatic expiration timer to 30 minutes.
         /// </summary>
         /// <remarks>
         /// For full documentation on RefreshLock, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/RefreshLock.html
@@ -174,7 +181,7 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a Unlock request
+        /// The Unlock operation releases the lock on a file.
         /// </summary>
         /// <remarks>
         /// For full documentation on Unlock, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/Unlock.html
@@ -218,7 +225,7 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a UnlockAndRelock request
+        /// The UnlockAndRelock operation releases a lock on a file, and then immediately takes a new lock on the file.
         /// </summary>
         /// <remarks>
         /// For full documentation on UnlockAndRelock, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/UnlockAndRelock.html
@@ -263,7 +270,7 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a PutFile request
+        /// The PutFile operation updates a file’s binary contents.
         /// </summary>
         /// <remarks>
         /// For full documentation on PutFile, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/PutFile.html
@@ -272,12 +279,13 @@ namespace com.microsoft.dx.officewopi.Utils
         {
             // Get the Lock value passed in on the request
             string requestLock = context.Request.Headers[WopiRequestHeaders.LOCK];
+            var editors = context.Request.Headers[WopiRequestHeaders.EDITORS];
 
             // Ensure the file has a valid lock
             if (String.IsNullOrEmpty(file.LockValue))
             {
                 // If the file is 0 bytes, this is document creation
-                if (context.Request.InputStream.Length == 0)
+                if (file.Size == 0)
                 {
                     // Update the file in blob storage
                     var bytes = new byte[context.Request.InputStream.Length];
@@ -287,6 +295,7 @@ namespace com.microsoft.dx.officewopi.Utils
 
                     // Update version
                     file.Version++;
+                    file.LastModifiedTime = DateTime.Now;
                     await DocumentDBRepository<FileModel>.UpdateItemAsync("Files", file.id.ToString(), (FileModel)file);
 
                     // Return success 200
@@ -323,6 +332,7 @@ namespace com.microsoft.dx.officewopi.Utils
 
                 // Update version
                 file.Version++;
+                file.LastModifiedTime = DateTime.Now;
                 await DocumentDBRepository<FileModel>.UpdateItemAsync("Files", file.id.ToString(), (FileModel)file);
 
                 // Return success 200
@@ -331,7 +341,7 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a PutRelativeFile request
+        /// The PutRelativeFile operation creates a new file on the host based on the current file
         /// </summary>
         /// <remarks>
         /// For full documentation on PutRelativeFile, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/PutRelativeFile.html
@@ -387,23 +397,22 @@ namespace com.microsoft.dx.officewopi.Utils
                 var token = security.GenerateToken(newFile.OwnerId, newFile.Container, newFile.id.ToString());
                 var tokenStr = security.WriteToken(token);
 
-                // Prepare the Json response
-                string json = String.Format("{ 'Name': '{0}, 'Url': 'https://{1}/wopi/files/{2}?access_token={3}'",
-                    newFile.BaseFileName, context.Request.Url.Authority, newFile.id.ToString(), tokenStr);
+                var view = file.Actions.FirstOrDefault(i => i.name == "view");
+                var edit = file.Actions.FirstOrDefault(i => i.name == "edit");
 
-                // Add the optional properties to response if applicable (HostViewUrl, HostEditUrl)
-                var fileExt = newFile.BaseFileName.Substring(newFile.BaseFileName.LastIndexOf('.') + 1).ToLower();
-                var view = file.Actions.FirstOrDefault(i => i.ext == fileExt && i.name == "view");
-                if (view != null)
-                    json += String.Format(", 'HostViewUrl': '{0}'", WopiUtil.GetActionUrl(view, newFile, context.Request.Url.Authority));
-                var edit = file.Actions.FirstOrDefault(i => i.ext == fileExt && i.name == "edit");
-                if (edit != null)
-                    json += String.Format(", 'HostEditUrl': '{0}'", WopiUtil.GetActionUrl(edit, newFile, context.Request.Url.Authority));
-                json += " }";
+                // Prepare the Json response
+                var jsonObj = new
+                {
+                    Name = newFile.BaseFileName,
+                    Url = $@"https://{context.Request.Url.Authority}/wopi/files/{newFile.id}?access_token={tokenStr}",
+                    HostViewUrl = view != null ? $@"https://{context.Request.Url.Authority}/Home/Detail/{newFile.id}?action=view" : "",
+                    HostEditUrl = edit != null ? $@"https://{context.Request.Url.Authority}/Home/Detail/{newFile.id}?action=edit" : ""
+                };
+
 
                 // Write the response and return a success 200
                 var response = ReturnStatus(HttpStatusCode.OK, "Success");
-                response.Content = new StringContent(json);
+                response.Content = new StringContent(JsonConvert.SerializeObject(jsonObj));
                 return response;
             }
             else
@@ -413,7 +422,7 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a RenameFile request
+        /// The RenameFile operation renames a file.
         /// </summary>
         /// <remarks>
         /// For full documentation on RenameFile, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/RenameFile.html
@@ -428,6 +437,7 @@ namespace com.microsoft.dx.officewopi.Utils
             {
                 // Get the new file name
                 var newFileName = context.Request.Headers[WopiRequestHeaders.REQUESTED_NAME];
+                var fileExt = file.BaseFileName.Substring(file.BaseFileName.LastIndexOf('.') + 1).ToLower();
 
                 // Ensure the file isn't locked
                 if (String.IsNullOrEmpty(file.LockValue) ||
@@ -437,22 +447,29 @@ namespace com.microsoft.dx.officewopi.Utils
                     // Update the file with a LockValue and LockExpiration
                     file.LockValue = requestLock;
                     file.LockExpires = DateTime.Now.AddMinutes(30);
-                    file.BaseFileName = newFileName;
+                    file.BaseFileName = $"{newFileName}.{fileExt}";
                     await DocumentDBRepository<FileModel>.UpdateItemAsync("Files", file.id.ToString(), (FileModel)file);
 
                     // Return success 200
-                    return ReturnStatus(HttpStatusCode.OK, "Success");
+                    var jsonObj = new { Name = newFileName };
+
+                    var response = ReturnStatus(HttpStatusCode.OK, "Success");
+                    response.Content = new StringContent(JsonConvert.SerializeObject(jsonObj));
+                    return response;
                 }
                 else if (file.LockValue == requestLock)
                 {
                     // File lock matches existing lock, so we can change the name
                     file.LockExpires = DateTime.Now.AddMinutes(30);
-                    file.BaseFileName = newFileName;
+                    file.BaseFileName = $"{newFileName}.{fileExt}";
                     await DocumentDBRepository<FileModel>.UpdateItemAsync("Files", file.id.ToString(), (FileModel)file);
 
                     // Return success 200
-                    HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-                    return ReturnStatus(HttpStatusCode.OK, "Success");
+                    var jsonObj = new { Name = newFileName };
+
+                    var response = ReturnStatus(HttpStatusCode.OK, "Success");
+                    response.Content = new StringContent(JsonConvert.SerializeObject(jsonObj));
+                    return response;
                 }
                 else
                 {
@@ -468,7 +485,9 @@ namespace com.microsoft.dx.officewopi.Utils
         }
 
         /// <summary>
-        /// Processes a PutUserInfo request
+        /// The PutUserInfo operation stores some basic user information on the host. 
+        /// When a host receives this request, they must store the UserInfo string which is contained in the body of the request. 
+        /// The UserInfo string should be associated with a particular user, and should be passed back to the WOPI client in subsequent CheckFileInfo responses in the UserInfo property.
         /// </summary>
         /// <remarks>
         /// For full documentation on PutUserInfo, see https://wopi.readthedocs.org/projects/wopirest/en/latest/files/PutUserInfo.html
@@ -479,7 +498,7 @@ namespace com.microsoft.dx.officewopi.Utils
             var stream = context.Request.InputStream;
             var bytes = new byte[stream.Length];
             await stream.ReadAsync(bytes, 0, (int)stream.Length);
-            //file.UserInfo = System.Text.Encoding.UTF8.GetString(bytes);
+            file.UserInfo = System.Text.Encoding.UTF8.GetString(bytes);
 
             // Update the file in DocumentDB
             await DocumentDBRepository<FileModel>.UpdateItemAsync("Files", file.id.ToString(), (FileModel)file);

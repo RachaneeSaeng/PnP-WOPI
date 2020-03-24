@@ -35,20 +35,6 @@ namespace com.microsoft.dx.officewopi.Utils
     }
 
 
-
-    /// <summary>
-    /// Constains paths and confiurations to handle WOPI requests
-    /// </summary>
-    public static class WopiRequestPaths
-    {
-        //WOPI protocol constants
-        public const string WOPI_BASE_PATH = @"/wopi/";
-        public const string WOPI_CHILDREN_PATH = @"/children";
-        public const string WOPI_CONTENTS_PATH = @"/contents";
-        public const string WOPI_FILES_PATH = @"files/";
-        public const string WOPI_FOLDERS_PATH = @"folders/";
-    }
-
     /// <summary>
     /// Contains valid WOPI request headers
     /// </summary>
@@ -73,6 +59,7 @@ namespace com.microsoft.dx.officewopi.Utils
         public const string SIZE = "X-WOPI-Size";
         public const string SUGGESTED_TARGET = "X-WOPI-SuggestedTarget";
         public const string TIME_STAMP = "X-WOPI-TimeStamp";
+        public const string EDITORS = "X-WOPI-Editors";
     }
 
     /// <summary>
@@ -90,6 +77,7 @@ namespace com.microsoft.dx.officewopi.Utils
         public const string PREF_TRACE = "X-WOPI-PerfTrace";
         public const string SERVER_ERROR = "X-WOPI-ServerError";
         public const string SERVER_VERSION = "X-WOPI-ServerVersion";
+        //public const string ITEM_VERSION = "X-WOPI-ItemVersion"; //optional for all operations
         public const string VALID_RELATIVE_TARGET = "X-WOPI-ValidRelativeTarget";
     }
 }

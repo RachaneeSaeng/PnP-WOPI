@@ -32,7 +32,11 @@ namespace com.microsoft.dx.officewopi.Models
         [JsonProperty(PropertyName = "Version")]
         public int Version { get; set; }
 
-        //[JsonProperty(PropertyName = "UserInfo")]
-        //public string UserInfo { get; set; }
+        [JsonProperty(PropertyName = "LastModifiedTime")]
+        public DateTime LastModifiedTime { get; set; }
+
+        [JsonProperty(PropertyName = "UserInfo")]
+        public string UserInfo { get; set; }
+
     }
 }

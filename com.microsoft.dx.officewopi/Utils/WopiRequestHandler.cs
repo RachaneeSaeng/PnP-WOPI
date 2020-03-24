@@ -23,22 +23,24 @@ namespace com.microsoft.dx.officewopi.Utils
 
                 // Check for null file
                 if (file == null)
-                    return ReturnStatus(HttpStatusCode.NotFound, "File Unknown/User Unauthorized");
+                    return ReturnStatus(HttpStatusCode.NotFound, "File not found");
 
                 // Get discovery information
                 await file.PopulateActions();
 
                 // Augments the file with additional properties CloseUrl, HostViewUrl, HostEditUrl
-                file.CloseUrl = String.Format("https://{0}", context.Request.Url.Authority);
+                file.CloseUrl = $@"https://{context.Request.Url.Authority}";
+                file.DownloadUrl = $@"https://{context.Request.Url.Authority}/Home/Detail/{file.id}?action=embedview";
+                file.HostEmbeddedViewUrl = $@"https://{context.Request.Url.Authority}/Home/Detail/{file.id}?action=embedview";
+                //file.FileVersionUrl = 
 
                 var view = file.Actions.FirstOrDefault(i => i.name == "view");
                 if (view != null)
-                    file.HostViewUrl = $"https://wopi-test.go.myworkpapers.co.uk/Home/Detail/{file.id}?action=view";
-                //file.HostViewUrl = WopiUtil.GetActionUrl(view, file, context.Request.Url.Authority);
+                    file.HostViewUrl = $@"https://{context.Request.Url.Authority}/Home/Detail/{file.id}?action=view";
                 var edit = file.Actions.FirstOrDefault(i => i.name == "edit");
                 if (edit != null)
-                    file.HostEditUrl = $"https://wopi-test.go.myworkpapers.co.uk/Home/Detail/{file.id}?action=edit";
-                //file.HostEditUrl = WopiUtil.GetActionUrl(edit, file, context.Request.Url.Authority);
+                    file.HostEditUrl = $@"https://{context.Request.Url.Authority}/Home/Detail/{file.id}?action=edit";
+
 
                 // Get the user from the token (token is already validated)
                 file.UserId = "rachanee.saeng@gmail.com";

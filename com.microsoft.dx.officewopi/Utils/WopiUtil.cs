@@ -154,6 +154,14 @@ namespace com.microsoft.dx.officewopi.Utils
                     return parameterName + "OfficeOnline"; //This value can be set to All, OfficeOnline or OfficeNativeClient to activate tests specific to Office Online and Office for iOS. If omitted, the default value is All.                   
                 case WopiUrlPlaceholders.WOPI_SOURCE:
                     return String.Format("{0}https://{1}/wopi/files/{2}", parameterName, authority, file.id.ToString());
+                case WopiUrlPlaceholders.DISABLE_ASYNC:
+                case WopiUrlPlaceholders.DISABLE_BROADCAST:
+                    return parameterName + "false";
+                case WopiUrlPlaceholders.EMBDDED:
+                case WopiUrlPlaceholders.FULLSCREEN:
+                case WopiUrlPlaceholders.RECORDING:
+                    // These are all broadcast related actions
+                    return parameterName + "true";
                 default:
                     return "";
 
