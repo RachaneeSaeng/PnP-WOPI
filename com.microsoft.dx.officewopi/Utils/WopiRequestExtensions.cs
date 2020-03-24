@@ -296,6 +296,7 @@ namespace com.microsoft.dx.officewopi.Utils
                     // Update version
                     file.Version++;
                     file.LastModifiedTime = DateTime.Now;
+                    file.LastModifiedUsers = editors;
                     await DocumentDBRepository<FileModel>.UpdateItemAsync("Files", file.id.ToString(), (FileModel)file);
 
                     // Return success 200
@@ -333,6 +334,7 @@ namespace com.microsoft.dx.officewopi.Utils
                 // Update version
                 file.Version++;
                 file.LastModifiedTime = DateTime.Now;
+                file.LastModifiedUsers = editors;
                 await DocumentDBRepository<FileModel>.UpdateItemAsync("Files", file.id.ToString(), (FileModel)file);
 
                 // Return success 200
@@ -498,7 +500,7 @@ namespace com.microsoft.dx.officewopi.Utils
             var stream = context.Request.InputStream;
             var bytes = new byte[stream.Length];
             await stream.ReadAsync(bytes, 0, (int)stream.Length);
-            file.UserInfo = System.Text.Encoding.UTF8.GetString(bytes);
+            //file.UserInfo = System.Text.Encoding.UTF8.GetString(bytes);
 
             // Update the file in DocumentDB
             await DocumentDBRepository<FileModel>.UpdateItemAsync("Files", file.id.ToString(), (FileModel)file);

@@ -35,8 +35,11 @@ namespace com.microsoft.dx.officewopi.Models
         [JsonProperty(PropertyName = "LastModifiedTime")]
         public DateTime LastModifiedTime { get; set; }
 
-        [JsonProperty(PropertyName = "UserInfo")]
-        public string UserInfo { get; set; }
+        [JsonProperty(PropertyName = "LastModifiedUsers")]
+        public string LastModifiedUsers { get; set; }
+
+        //[JsonProperty(PropertyName = "UserInfo")]
+        //public string UserInfo { get; set; }
 
     }
 }

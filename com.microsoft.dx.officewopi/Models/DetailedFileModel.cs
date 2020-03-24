@@ -100,7 +100,7 @@ namespace com.microsoft.dx.officewopi.Models
         [JsonProperty(PropertyName = "SupportsUserInfo")]
         public bool SupportsUserInfo
         {
-            get { return true; }
+            get { return false; }
         }
 
         [JsonProperty(PropertyName = "LicenseCheckForEditIsEnabled")]
